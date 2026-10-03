@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Fit 51 - Calisthénie Militaire</title>
+    <style>
+        :root {
+            --bg-color: #121412;
+            --card-bg: #1a1e1a;
+            --accent: #d4a373; /* Kaki / Sable chaud */
+            --military-green: #386641;
+            --rest-color: #bc4749; /* Rouge/Brique pour la pause */
+            --text-main: #f4f4f4;
+            --text-muted: #adb5bd;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--military-green);
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            margin: 20px 0 10px 0;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-left: 4px solid var(--military-green);
+            padding-left: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid #2d3732;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .card-checkbox {
+            margin-top: 5px;
+            transform: scale(1.3);
+            accent-color: var(--military-green);
+            cursor: pointer;
+        }
+
+        .card-content {
+            flex-grow: 1;
+        }
+
+        /* --- CONTENEUR D'ANIMATION / IMAGE --- */
+        .anim-container {
+            width: 100%;
+            height: 140px;
+            background-color: #0b0d0b;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+            border: 1px dashed #3a403a;
+        }
+
+        .anim-container img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        /* --- ANIMATIONS DES AUTRES EXERCICES (CSS ART) --- */
+        @keyframes chairTwist {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+        .chair-twist { width: 16px; height: 40px; background: var(--accent); border-radius: 6px; animation: chairTwist 2s infinite ease-in-out; }
+
+        @keyframes chairLegs {
+            0%, 100% { transform: scaleX(1); }
+            50% { transform: scaleX(1.3); }
+        }
+        .chair-legs { width: 50px; height: 12px; background: var(--accent); border-radius: 6px; animation: chairLegs 2s infinite ease-in-out; }
+
+        @keyframes chairSingleLeg {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px) rotate(-15deg); }
+        }
+        .chair-single-leg { width: 50px; height: 12px; background: var(--accent); border-radius: 6px; animation: chairSingleLeg 2s infinite ease-in-out; }
+
+        .exercise-info h3 {
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .exercise-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.25;
+        }
+
+        .exercise-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--military-green);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .sets-selector {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .sets-selector select {
+            background: var(--bg-color);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        /* --- MODE INTERACTIF / MINUTEUR & PARAMÈTRES --- */
+        .session-panel {
+            background-color: var(--card-bg);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .settings-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 10px 0;
+            background: #111411;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #2d3732;
+        }
+
+        .setting-box label {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .setting-box input {
+            width: 55px;
+            background: var(--card-bg);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 4px;
+            text-align: center;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .duration-preview {
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .timer-display {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 8px 0;
+            font-family: monospace;
+        }
+
+        .btn {
+            background-color: var(--military-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: #4a4e4a;
+        }
+
+        #workout-status {
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Tactical Fit 51</h1>
+        <p>Conditionnement physique adapté & sécurisé</p>
+    </header>
+
+    <!-- ZONE INTERACTIVE / ENTRAÎNEMENT DU JOUR -->
+    <div class="session-panel">
+        <h2 style="font-size: 1.05rem; color: var(--accent);">Mode Entraînement Guidé</h2>
+        
+        <div class="settings-container">
+            <div class="setting-box">
+                <label for="work-time">Effort (s)</label>
+                <input type="number" id="work-time" value="45" min="10" max="120" step="5" oninput="calculateTotalDuration()">
+            </div>
+            <div class="setting-box">
+                <label for="rest-time">Récup (s)</label>
+                <input type="number" id="rest-time" value="20" min="5" max="60" step="5" oninput="calculateTotalDuration()">
+            </div>
+        </div>
+
+        <div class="duration-preview" id="total-duration-text">Temps estimé : -- min -- s</div>
+
+        <div id="workout-status">Prêt pour la mission ? Cochez vos exercices ci-dessous.</div>
+        <div class="timer-display" id="timer">00:00</div>
+        <button class="btn" id="start-btn" onclick="startSession()">Lancer le Circuit Sélectionné</button>
+        <button class="btn btn-secondary" onclick="resetSession()">Stop</button>
+    </div>
+
+    <!-- CATALOGUE DES EXERCICES -->
+    <div class="section-title">
+        <span>Catalogue des Mouvements</span>
+    </div>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">Cochez les exercices et ajustez le nombre de séries de votre choix pour chacun :</p>
+
+    <!-- EXERCICE 1 (SQUAT) -->
+    <div class="card" data-card>
+        <input type="checkbox" class="card-checkbox" data-name="1. Squats" checked onchange="calculateTotalDuration()">
+        <div class="card-content">
+            <div class="anim-container">
+                <img src="https://i.postimg.cc/zHbNjQQq/1000028016.png" alt="Squat Demonstration">
+            </div>
+            <div class="exercise-info">
+                <h3>1. Le Squat (Poids du corps ou chaise)</h3>
+                <p>Fléchissez les genoux en gardant le dos droit, poussez sur les talons pour remonter.</p>
+                <div class="exercise-footer">
+                    <span class="badge">12-15 rép</span>
+                    <div class="sets-selector">
+                        <label>Séries :</label>
+                        <select class="exercise-sets" onchange="calculateTotalDuration()">
+                            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXERCICE 2 (POMPES INCLINÉES) -->
+    <div class="card" data-card>
+        <input type="checkbox" class="card-checkbox" data-name="2. Pompes Inclinées" checked onchange="calculateTotalDuration()">
+        <div class="card-content">
+            <div class="anim-container">
+                <img src="https://i.postimg.cc/2LvJ3NJB/1000028017.png" alt="Pompes Inclinées Demonstration">
+            </div>
+            <div class="exercise-info">
+                <h3>2. Pompes Inclinées</h3>
+                <p>Mains sur un meuble haut ou un comptoir. Corps bien aligné pour préserver les articulations.</p>
+                <div class="exercise-footer">
+                    <span class="badge">10-12 rép</span>
+                    <div class="sets-selector">
+                        <label>Séries :</label>
+                        <select class="exercise-sets" onchange="calculateTotalDuration()">
+                            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXERCICE 3 (PONT FESSIER) -->
+    <div class="card" data-card>
+        <input type="checkbox" class="card-checkbox" data-name="3. Pont Fessier" checked onchange="calculateTotalDuration()">
+        <div class="card-content">
+            <div class="anim-container">
+                <img src="https://i.postimg.cc/PLgQJvkY/1000028018.png" alt="Pont Fessier Demonstration">
+            </div>
+            <div class="exercise-info">
+                <h3>3. Pont Fessier (Glute Bridge)</h3>
+                <p>Allongé sur le dos, montez le bassin en contractant les fessiers 2 secondes en haut.</p>
+                <div class="exercise-footer">
+                    <span class="badge">15 rép</span>
+                    <div class="sets-selector">
+                        <label>Séries :</label>
+                        <select class="exercise-sets" onchange="calculateTotalDuration()">
+                            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXERCICE 4 (ROWING ÉLASTIQUE) -->
+    <div class="card" data-card>
+        <input type="checkbox" class="card-checkbox" data-name="4. Tirage / Rowing" checked onchange="calculateTotalDuration()">
+        <div class="card-content">
+            <div class="anim-container">
+                <img src="https://i.postimg.cc/R3JVGNn5/1000028032.jpg" alt="Rowing avec élastique">
+            </div>
+            <div class="exercise-info">
+                <h3>4. Tirage / Rowing Assis (Élastique)</h3>
+                <p>Assis au sol, jambes fléchies, élastique autour des pieds. Tirez vers vous en serrant les omoplates.</p>
+                <div class="exercise-footer">
+                    <span class="badge">12 rép</span>
+                    <div class="sets-selector">
+                        <label>Séries :</label>
+                        <select class="exercise-sets" onchange="calculateTotalDuration()">
+                            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXERCICE 5 (FENTES AVEC HALTÈRES) -->
+    <div class="card" data-card>
+        <input type="checkbox" class="card-checkbox" data-name="5. Fentes avec haltères" checked onchange="calculateTotalDuration()">
+        <div class="card-content">
+            <div class="anim-container">
+                <img src="https://i.postimg.cc/Sjd2nY6j/1000028035.jpg" alt="Fentes avec haltères">
+            </div>
+            <div class="exercise-info">
+                <h3>5. Fentes avec haltères</h3>
+                <p>Grand pas en avant ou en arrière avec des haltères, fléchissez les genoux en gardant le buste bien droit.</p>
+                <div class="exercise-footer">
+                    <span class="badge">10 rép</span>
+                    <div class="sets-selector">
+                        <label>Séries :</label>
+                        <select class="exercise-sets" onchange="calculateTotalDuration()">
+                            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXERCICE 6 (BIRD-DOG) -->
+    <div class="card" data-card>
+        <input type="checkbox" class="card-checkbox" data-name="6. Bird-Dog" checked onchange="calculateTotalDuration()">
+        <div class="card-content">
+            <div class="anim-container">
+                <img src="https://i.postimg.cc/Mv4GB7vJ/1000028036.jpg" alt="Bird-Dog">
+            </div>
+            <div class="exercise-info">
+                <h3>6. Le Bird-Dog (Quadrupédie)</h3>
+                <p>À quatre pattes, tendez simultanément bras opposé et jambe opposée en maintenant le gainage.</p>
+                <div class="exercise-footer">
+                    <span class="badge">10 rép/côté</span>
+                    <div class="sets-selector">
+                        <label>Séries :</label>
+                        <select class="exercise-sets" onchange="calculateTotalDuration()">
+                            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXERCICE 7 (CRUNCH ASSIS) -->
+    <div class="card" data-card style="border-color: var(--accent);">
+        <input type="checkbox" class="card-checkbox" data-name="7. Crunch Assis (Abdos)" onchange="calculateTotalDuration()">
+        <div class="card-content">
+            <div class="anim-container">
+                <img src="https://i.postimg.cc/N5x4f0Fv/1000028038.jpg" alt="Crunch Assis">
+            </div>
+            <div class="exercise-info">
+                <h3>7. Crunch Assis (Abdos profonds)</h3>
+                <p>Assis sur une chaise, enroulez le haut du buste vers l'avant pour contracter les abdos.</p>
+                <div class="exercise-footer">
+                    <span class="badge">15 rép</span>
+                    <div class="sets-selector">
+                        <label>Séries :</label>
+                        <select class="exercise-sets" onchange="calculateTotalDuration()">
+                            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXERCICE 8 (TORSION ASSISE) -->
+    <div class="card" data-card style="border-color: var(--accent);">
+        <input type="checkbox" class="card-checkbox" data-name="8. Torsion Assise (Obliques)" onchange="calculateTotalDuration()">
+        <div class="card-content">
+            <div class="anim-container"><div class="chair-twist"></div></div>
+            <div class="exercise-info">
+                <h3>8. Torsion Assise (Obliques)</h3>
+                <p>Mains derrière la tête, effectuez des rotations contrôlées du buste.</p>
+                <div class="exercise-footer">
+                    <span class="badge">15 rép</span>
+                    <div class="sets-selector">
+                        <label>Séries :</label>
+                        <select class="exercise-sets" onchange="calculateTotalDuration()">
+                            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXERCICE 9 (OUVERTURE DE JAMBES) -->
+    <div class="card" data-card style="border-color: var(--accent);">
+        <input type="checkbox" class="card-checkbox" data-name="9. Ouverture de Jambes Assise" onchange="calculateTotalDuration()">
+        <div class="card-content">
+            <div class="anim-container"><div class="chair-legs"></div></div>
+            <div class="exercise-info">
+                <h3>9. Ouverture de Jambes Assise</h3>
+                <p>Assis au bord de la chaise, ouvrez et fermez dynamiquement les jambes.</p>
+                <div class="exercise-footer">
+                    <span class="badge">15 rép</span>
+                    <div class="sets-selector">
+                        <label>Séries :</label>
+                        <select class="exercise-sets" onchange="calculateTotalDuration()">
+                            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXERCICE 10 (LEVÉ DE JAMBE TENDUE) -->
+    <div class="card" data-card style="border-color: var(--accent);">
+        <input type="checkbox" class="card-checkbox" data-name="10. Levés de Jambe Tendue Assis" onchange="calculateTotalDuration()">
+        <div class="card-content">
+            <div class="anim-container"><div class="chair-single-leg"></div></div>
+            <div class="exercise-info">
+                <h3>10. Levés de Jambe Tendue Assis</h3>
+                <p>Tendez une jambe après l'autre à l'horizontale en gardant le buste bien droit.</p>
+                <div class="exercise-footer">
+                    <span class="badge">15 rép</span>
+                    <div class="sets-selector">
+                        <label>Séries :</label>
+                        <select class="exercise-sets" onchange="calculateTotalDuration()">
+                            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let timeLeft = 0;
+        let isRunning = false;
+        let currentStep = 0;
+        let steps = [];
+        let audioCtx = null;
+
+        function playSound(type) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'end_work') {
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'end_rest') {
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                }
+            } catch (e) {
+                console.log("Audio non pris en charge ou bloqué", e);
+            }
+        }
+
+        function calculateTotalDuration() {
+            let workDuration = parseInt(document.getElementById('work-time').value) || 45;
+            let restDuration = parseInt(document.getElementById('rest-time').value) || 20;
+
+            let prepTime = 15;
+            let totalWorkItems = 0;
+            let totalRestItems = 0;
+
+            let cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                let cb = card.querySelector('.card-checkbox');
+                if (cb.checked) {
+                    let sets = parseInt(card.querySelector('.exercise-sets').value) || 1;
+                    totalWorkItems += sets;
+                }
+            });
+
+            if (totalWorkItems > 0) {
+                totalRestItems = totalWorkItems - 1;
+            }
+
+            let totalSeconds = prepTime + (totalWorkItems * workDuration) + (totalRestItems * restDuration);
+
+            let minutes = Math.floor(totalSeconds / 60);
+            let seconds = totalSeconds % 60;
+
+            document.getElementById('total-duration-text').innerText = 
+                `Temps estimé : ${minutes} min ${seconds < 10 ? '0' : ''}${seconds} s`;
+        }
+
+        function buildSteps() {
+            let workDuration = parseInt(document.getElementById('work-time').value) || 45;
+            let restDuration = parseInt(document.getElementById('rest-time').value) || 20;
+
+            steps = [{ name: "Préparation / Échauffement", duration: 15, type: 'prep' }];
+
+            let cards = document.querySelectorAll('.card');
+            let exerciseQueue = [];
+
+            cards.forEach(card => {
+                let cb = card.querySelector('.card-checkbox');
+                if (cb.checked) {
+                    let exName = cb.getAttribute('data-name');
+                    let sets = parseInt(card.querySelector('.exercise-sets').value) || 1;
+                    
+                    for (let s = 1; s <= sets; s++) {
+                        exerciseQueue.push({
+                            name: sets > 1 ? `${exName} (Série ${s}/${sets})` : exName,
+                            duration: workDuration,
+                            type: 'work'
+                        });
+                    }
+                }
+            });
+
+            exerciseQueue.forEach((ex, index) => {
+                steps.push(ex);
+                if (index < exerciseQueue.length - 1) {
+                    steps.push({ name: "Récupération", duration: restDuration, type: 'rest' });
+                }
+            });
+
+            steps.push({ name: "Mission Accomplie ! Excellent travail.", duration: 0, type: 'end' });
+        }
+
+        function updateDisplay() {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            document.getElementById('timer').innerText = 
+                (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+        }
+
+        function startSession() {
+            if (isRunning) return;
+            buildSteps();
+            
+            if (steps.length <= 2) {
+                alert("Veuillez cocher au moins un exercice !");
+                return;
+            }
+
+            isRunning = true;
+            currentStep = 0;
+            runStep();
+        }
+
+        function runStep() {
+            if (currentStep >= steps.length) {
+                resetSession();
+                return;
+            }
+
+            let currentObj = steps[currentStep];
+            document.getElementById('workout-status').innerText = currentObj.name;
+            timeLeft = currentObj.duration;
+            updateDisplay();
+
+            if (timeLeft === 0) {
+                currentStep++;
+                runStep();
+                return;
+            }
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    
+                    if (currentObj.type === 'work') {
+                        playSound('end_work');
+                    } else if (currentObj.type === 'rest') {
+                        playSound('end_rest');
+                    }
+
+                    currentStep++;
+                    runStep();
+                }
+            }, 1000);
+        }
+
+        function resetSession() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            currentStep = 0;
+            timeLeft = 0;
+            document.getElementById('workout-status').innerText = "Prêt pour la mission ? Cochez vos exercices ci-dessous.";
+            document.getElementById('timer').innerText = "00:00";
+            calculateTotalDuration();
+        }
+
+        calculateTotalDuration();
+    </script>
+</body>
+</html>

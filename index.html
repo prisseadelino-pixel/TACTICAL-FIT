@@ -501,9 +501,9 @@
             <div class="anim-container"><div class="chair-single-leg"></div></div>
             <div class="exercise-info">
                 <h3>10. Levés de Jambe Tendue Assis</h3>
-                <p>Tendez une jambe après l'autre à l'horizontale en gardant le buste bien droit.</p>
+                <p>Assis bien droit, tendez une jambe à l'horizontale, maintenez une seconde puis alternez.</p>
                 <div class="exercise-footer">
-                    <span class="badge">15 rép</span>
+                    <span class="badge">12 rép/côté</span>
                     <div class="sets-selector">
                         <label>Séries :</label>
                         <select class="exercise-sets" onchange="calculateTotalDuration()">
@@ -516,175 +516,67 @@
     </div>
 
     <script>
-        let timerInterval;
-        let timeLeft = 0;
-        let isRunning = false;
-        let currentStep = 0;
-        let steps = [];
-        let audioCtx = null;
-
-        function playSound(type) {
-            try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                if (type === 'end_work') {
-                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-                    osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.15);
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.3);
-                } else if (type === 'end_rest') {
-                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.5);
-                }
-            } catch (e) {
-                console.log("Audio non pris en charge ou bloqué", e);
-            }
-        }
+        let timerInterval = null;
+        let totalSecondsRemaining = 0;
 
         function calculateTotalDuration() {
-            let workDuration = parseInt(document.getElementById('work-time').value) || 45;
-            let restDuration = parseInt(document.getElementById('rest-time').value) || 20;
-
-            let prepTime = 15;
-            let totalWorkItems = 0;
-            let totalRestItems = 0;
-
-            let cards = document.querySelectorAll('.card');
+            const workTime = parseInt(document.getElementById('work-time').value) || 0;
+            const restTime = parseInt(document.getElementById('rest-time').value) || 0;
+            
+            let totalSets = 0;
+            const cards = document.querySelectorAll('.card');
             cards.forEach(card => {
-                let cb = card.querySelector('.card-checkbox');
-                if (cb.checked) {
-                    let sets = parseInt(card.querySelector('.exercise-sets').value) || 1;
-                    totalWorkItems += sets;
+                const checkbox = card.querySelector('.card-checkbox');
+                if (checkbox && checkbox.checked) {
+                    const setsSelect = card.querySelector('.exercise-sets');
+                    totalSets += parseInt(setsSelect.value) || 0;
                 }
             });
 
-            if (totalWorkItems > 0) {
-                totalRestItems = totalWorkItems - 1;
-            }
+            // Calcul global : (Temps d'effort + Temps de repos) * nombre total de séries
+            let totalSecs = (workTime + restTime) * totalSets;
+            if(totalSecs < 0) totalSecs = 0;
 
-            let totalSeconds = prepTime + (totalWorkItems * workDuration) + (totalRestItems * restDuration);
+            const mins = Math.floor(totalSecs / 60);
+            const secs = totalSecs % 60;
 
-            let minutes = Math.floor(totalSeconds / 60);
-            let seconds = totalSeconds % 60;
-
-            document.getElementById('total-duration-text').innerText = 
-                `Temps estimé : ${minutes} min ${seconds < 10 ? '0' : ''}${seconds} s`;
-        }
-
-        function buildSteps() {
-            let workDuration = parseInt(document.getElementById('work-time').value) || 45;
-            let restDuration = parseInt(document.getElementById('rest-time').value) || 20;
-
-            steps = [{ name: "Préparation / Échauffement", duration: 15, type: 'prep' }];
-
-            let cards = document.querySelectorAll('.card');
-            let exerciseQueue = [];
-
-            cards.forEach(card => {
-                let cb = card.querySelector('.card-checkbox');
-                if (cb.checked) {
-                    let exName = cb.getAttribute('data-name');
-                    let sets = parseInt(card.querySelector('.exercise-sets').value) || 1;
-                    
-                    for (let s = 1; s <= sets; s++) {
-                        exerciseQueue.push({
-                            name: sets > 1 ? `${exName} (Série ${s}/${sets})` : exName,
-                            duration: workDuration,
-                            type: 'work'
-                        });
-                    }
-                }
-            });
-
-            exerciseQueue.forEach((ex, index) => {
-                steps.push(ex);
-                if (index < exerciseQueue.length - 1) {
-                    steps.push({ name: "Récupération", duration: restDuration, type: 'rest' });
-                }
-            });
-
-            steps.push({ name: "Mission Accomplie ! Excellent travail.", duration: 0, type: 'end' });
-        }
-
-        function updateDisplay() {
-            let minutes = Math.floor(timeLeft / 60);
-            let seconds = timeLeft % 60;
-            document.getElementById('timer').innerText = 
-                (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+            document.getElementById('total-duration-text').innerText = `Temps estimé : ${mins} min ${secs < 10 ? '0' : ''}${secs} s (${totalSets} séries au total)`;
         }
 
         function startSession() {
-            if (isRunning) return;
-            buildSteps();
+            if (timerInterval) clearInterval(timerInterval);
             
-            if (steps.length <= 2) {
-                alert("Veuillez cocher au moins un exercice !");
-                return;
-            }
-
-            isRunning = true;
-            currentStep = 0;
-            runStep();
-        }
-
-        function runStep() {
-            if (currentStep >= steps.length) {
-                resetSession();
-                return;
-            }
-
-            let currentObj = steps[currentStep];
-            document.getElementById('workout-status').innerText = currentObj.name;
-            timeLeft = currentObj.duration;
-            updateDisplay();
-
-            if (timeLeft === 0) {
-                currentStep++;
-                runStep();
-                return;
-            }
+            const workTime = parseInt(document.getElementById('work-time').value) || 45;
+            totalSecondsRemaining = workTime;
+            
+            document.getElementById('workout-status').innerText = "🔴 EFFORT EN COURS !";
+            updateTimerDisplay();
 
             timerInterval = setInterval(() => {
-                timeLeft--;
-                updateDisplay();
-                
-                if (timeLeft <= 0) {
+                totalSecondsRemaining--;
+                if (totalSecondsRemaining <= 0) {
                     clearInterval(timerInterval);
-                    
-                    if (currentObj.type === 'work') {
-                        playSound('end_work');
-                    } else if (currentObj.type === 'rest') {
-                        playSound('end_rest');
-                    }
-
-                    currentStep++;
-                    runStep();
+                    document.getElementById('workout-status').innerText = "🟢 REPOS / TERMINÉ !";
                 }
+                updateTimerDisplay();
             }, 1000);
         }
 
         function resetSession() {
-            clearInterval(timerInterval);
-            isRunning = false;
-            currentStep = 0;
-            timeLeft = 0;
+            if (timerInterval) clearInterval(timerInterval);
+            totalSecondsRemaining = 0;
             document.getElementById('workout-status').innerText = "Prêt pour la mission ? Cochez vos exercices ci-dessous.";
             document.getElementById('timer').innerText = "00:00";
-            calculateTotalDuration();
         }
 
-        calculateTotalDuration();
+        function updateTimerDisplay() {
+            const mins = Math.floor(totalSecondsRemaining / 60);
+            const secs = totalSecondsRemaining % 60;
+            document.getElementById('timer').innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Calcul initial au chargement de la page
+        window.onload = calculateTotalDuration;
     </script>
 </body>
 </html>

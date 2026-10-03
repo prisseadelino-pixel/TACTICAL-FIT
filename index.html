@@ -518,8 +518,32 @@
 
     <script>
         let timerInterval = null;
-        let totalSecondsRemaining = 0;
+        let currentTimeRemaining = 0;
         let isPaused = false;
+        let workoutQueue = []; // Liste de toutes les étapes (effort / repos)
+        let currentStepIndex = 0;
+
+        // Fonction pour émettre un son de bip via l'API Web Audio
+        function playBeep(frequency = 440, duration = 200) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.value = frequency;
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                setTimeout(() => {
+                    oscillator.stop();
+                    audioCtx.close();
+                }, duration);
+            } catch (e) {
+                console.log("Audio non supporté ou bloqué par le navigateur");
+            }
+        }
 
         function calculateTotalDuration() {
             const workTime = parseInt(document.getElementById('work-time').value) || 0;
@@ -544,34 +568,99 @@
             document.getElementById('total-duration-text').innerText = `Temps estimé : ${mins} min ${secs < 10 ? '0' : ''}${secs} s (${totalSets} séries au total)`;
         }
 
+        function buildWorkoutQueue() {
+            workoutQueue = [];
+            const workTime = parseInt(document.getElementById('work-time').value) || 45;
+            const restTime = parseInt(document.getElementById('rest-time').value) || 20;
+
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                const checkbox = card.querySelector('.card-checkbox');
+                if (checkbox && checkbox.checked) {
+                    const exerciseTitle = card.querySelector('.exercise-info h3').innerText;
+                    const setsCount = parseInt(card.querySelector('.exercise-sets').value) || 3;
+
+                    for (let s = 1; s <= setsCount; s++) {
+                        // Ajouter l'étape d'effort
+                        workoutQueue.push({
+                            type: 'work',
+                            name: `${exerciseTitle} (Série ${s}/${setsCount})`,
+                            duration: workTime
+                        });
+                        // Ajouter l'étape de repos (s'il y a du temps de repos configuré)
+                        if (restTime > 0) {
+                            workoutQueue.push({
+                                type: 'rest',
+                                name: `Récupération`,
+                                duration: restTime
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
         function startSession() {
             if (isPaused) {
-                // Reprendre après une pause
                 isPaused = false;
-                document.getElementById('workout-status').innerText = "🔴 EFFORT EN COURS (Repris)";
                 document.getElementById('pause-btn').innerText = "Pause";
-            } else {
-                // Lancer un nouveau décompte
-                if (timerInterval) clearInterval(timerInterval);
-                const workTime = parseInt(document.getElementById('work-time').value) || 45;
-                totalSecondsRemaining = workTime;
-                document.getElementById('workout-status').innerText = "🔴 EFFORT EN COURS !";
+                runTimer();
+                return;
             }
 
+            buildWorkoutQueue();
+            if (workoutQueue.length === 0) {
+                alert("Veuillez cocher au moins un exercice !");
+                return;
+            }
+
+            currentStepIndex = 0;
+            if (timerInterval) clearInterval(timerInterval);
+            loadCurrentStep();
+            runTimer();
+        }
+
+        function loadCurrentStep() {
+            const step = workoutQueue[currentStepIndex];
+            currentTimeRemaining = step.duration;
+            
+            if (step.type === 'work') {
+                document.getElementById('workout-status').innerText = `🔴 ${step.name}`;
+            } else {
+                document.getElementById('workout-status').innerText = `🟢 REPOS - Préparez la suite`;
+            }
             updateTimerDisplay();
+        }
+
+        function runTimer() {
+            if (timerInterval) clearInterval(timerInterval);
 
             timerInterval = setInterval(() => {
-                totalSecondsRemaining--;
-                if (totalSecondsRemaining <= 0) {
+                currentTimeRemaining--;
+
+                if (currentTimeRemaining <= 0) {
                     clearInterval(timerInterval);
-                    document.getElementById('workout-status').innerText = "🟢 REPOS / TERMINÉ !";
+                    
+                    // Fin de l'étape actuelle : Son aigu pour notifier
+                    playBeep(880, 400); 
+
+                    currentStepIndex++;
+                    if (currentStepIndex < workoutQueue.length) {
+                        loadCurrentStep();
+                        runTimer();
+                    } else {
+                        document.getElementById('workout-status').innerText = "🏆 MISSION ACCOMPLIE ! Entraînement terminé.";
+                        document.getElementById('timer').innerText = "00:00";
+                        playBeep(523, 800); // Son de victoire final
+                    }
+                } else {
+                    updateTimerDisplay();
                 }
-                updateTimerDisplay();
             }, 1000);
         }
 
         function pauseSession() {
-            if (!timerInterval) return;
+            if (workoutQueue.length === 0) return;
 
             if (!isPaused) {
                 clearInterval(timerInterval);
@@ -579,13 +668,17 @@
                 document.getElementById('workout-status').innerText = "⏸️ EN PAUSE";
                 document.getElementById('pause-btn').innerText = "Reprendre";
             } else {
-                startSession();
+                isPaused = false;
+                document.getElementById('pause-btn').innerText = "Pause";
+                runTimer();
             }
         }
 
         function resetSession() {
             if (timerInterval) clearInterval(timerInterval);
-            totalSecondsRemaining = 0;
+            workoutQueue = [];
+            currentStepIndex = 0;
+            currentTimeRemaining = 0;
             isPaused = false;
             document.getElementById('pause-btn').innerText = "Pause";
             document.getElementById('workout-status').innerText = "Prêt pour la mission ? Cochez vos exercices ci-dessous.";
@@ -593,8 +686,8 @@
         }
 
         function updateTimerDisplay() {
-            const mins = Math.floor(totalSecondsRemaining / 60);
-            const secs = totalSecondsRemaining % 60;
+            const mins = Math.floor(currentTimeRemaining / 60);
+            const secs = currentTimeRemaining % 60;
             document.getElementById('timer').innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
 

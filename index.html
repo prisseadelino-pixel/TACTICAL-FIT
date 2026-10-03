@@ -107,13 +107,7 @@
             object-fit: contain;
         }
 
-        /* --- ANIMATIONS DES AUTRES EXERCICES (CSS ART) --- */
-        @keyframes chairTwist {
-            0%, 100% { transform: rotate(-10deg); }
-            50% { transform: rotate(10deg); }
-        }
-        .chair-twist { width: 16px; height: 40px; background: var(--accent); border-radius: 6px; animation: chairTwist 2s infinite ease-in-out; }
-
+        /* --- ANIMATIONS DES AUTRES EXERCICES RESTANTS (CSS ART) --- */
         @keyframes chairLegs {
             0%, 100% { transform: scaleX(1); }
             50% { transform: scaleX(1.3); }
@@ -456,7 +450,9 @@
     <div class="card" data-card style="border-color: var(--accent);">
         <input type="checkbox" class="card-checkbox" data-name="8. Torsion Assise (Obliques)" onchange="calculateTotalDuration()">
         <div class="card-content">
-            <div class="anim-container"><div class="chair-twist"></div></div>
+            <div class="anim-container">
+                <img src="https://i.postimg.cc/pmc9mkX2/1000028268.jpg" alt="Torsion Assise">
+            </div>
             <div class="exercise-info">
                 <h3>8. Torsion Assise (Obliques)</h3>
                 <p>Mains derrière la tête, effectuez des rotations contrôlées du buste.</p>
@@ -533,7 +529,6 @@
                 }
             });
 
-            // Calcul global : (Temps d'effort + Temps de repos) * nombre total de séries
             let totalSecs = (workTime + restTime) * totalSets;
             if(totalSecs < 0) totalSecs = 0;
 
@@ -575,7 +570,6 @@
             document.getElementById('timer').innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
 
-        // Calcul initial au chargement de la page
         window.onload = calculateTotalDuration;
     </script>
 </body>

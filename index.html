@@ -50,6 +50,40 @@
             margin-top: 5px;
         }
 
+        /* --- MENU MUSIQUE --- */
+        .music-panel {
+            background-color: var(--card-bg);
+            border: 1px solid #2d3732;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .music-panel label {
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .music-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .music-controls select {
+            flex-grow: 1;
+            background: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--accent);
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+        }
+
         .section-title {
             font-size: 1.1rem;
             margin: 20px 0 10px 0;
@@ -259,6 +293,18 @@
         <h1>Tactical Fit</h1>
         <p>Conditionnement physique adapté & sécurisé</p>
     </header>
+
+    <!-- SÉLECTEUR DE MUSIQUE YOUTUBE MUSIC -->
+    <div class="music-panel">
+        <label for="music-select">🎵 Ambiance Musicale</label>
+        <div class="music-controls">
+            <select id="music-select">
+                <option value="https://music.youtube.com/channel/UCS_Sf4Ca5klzDkVPtq-_5_w?si=p72hCUfwXiaGVkG2">Sélection 1 (Chaîne / Artiste)</option>
+                <option value="https://music.youtube.com/watch?v=B4KCdo4NYI4&si=33gpYgGfbvCwHg1W">Sélection 2 (Morceau)</option>
+            </select>
+            <button class="btn" style="padding: 8px 15px; margin: 0; font-size: 0.85rem;" onclick="openMusic()">Ouvrir</button>
+        </div>
+    </div>
 
     <!-- ZONE INTERACTIVE / ENTRAÎNEMENT DU JOUR -->
     <div class="session-panel">
@@ -523,7 +569,15 @@
         let workoutQueue = [];
         let currentStepIndex = 0;
 
-        // Fonction pour émettre un bip sonore (différent selon l'exercice ou le repos)
+        // Fonction pour ouvrir la playlist sélectionnée dans le menu déroulant
+        function openMusic() {
+            const select = document.getElementById('music-select');
+            const url = select.value;
+            if (url) {
+                window.open(url, '_blank');
+            }
+        }
+
         function playBeep(frequency = 440, duration = 200) {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -531,7 +585,7 @@
                 const gainNode = audioCtx.createGain();
                 
                 oscillator.type = 'sine';
-                oscillator.frequency.value = frequency; // Fréquence personnalisable
+                oscillator.frequency.value = frequency;
                 oscillator.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
                 
@@ -545,13 +599,12 @@
             }
         }
 
-        // Fonction pour faire parler le téléphone (Coach vocal)
         function speakText(text) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // Arrêter la parole précédente si besoin
+                window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'fr-FR';
-                utterance.rate = 1.1; // Vitesse légèrement dynamique
+                utterance.rate = 1.1;
                 window.speechSynthesis.speak(utterance);
             }
         }
@@ -625,7 +678,7 @@
 
             currentStepIndex = 0;
             if (timerInterval) clearInterval(timerInterval);
-            loadCurrentStep(true); // Premier chargement avec annonce "Go"
+            loadCurrentStep(true);
             runTimer();
         }
 
@@ -635,19 +688,17 @@
             
             if (step.type === 'work') {
                 document.getElementById('workout-status').innerText = `🔴 ${step.name}`;
-                // Annonce vocale "Go" + Bip aigu pour le départ
                 if (!isFirst) {
                     speakText("Go");
-                    playBeep(880, 300); // Son aigu (Go / Démarrage)
+                    playBeep(880, 300);
                 } else {
                     speakText("C'est parti, Go");
                     playBeep(880, 300);
                 }
             } else {
                 document.getElementById('workout-status').innerText = `🟢 REPOS - Préparez la suite`;
-                // Annonce vocale "Pause" + Bip grave pour la récupération
                 speakText("Pause");
-                playBeep(440, 300); // Son plus grave (Repos / Pause)
+                playBeep(440, 300);
             }
             updateTimerDisplay();
         }

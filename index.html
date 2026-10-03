@@ -241,6 +241,10 @@
             background-color: #4a4e4a;
         }
 
+        .btn-warning {
+            background-color: #b5838d;
+        }
+
         #workout-status {
             font-size: 1.05rem;
             font-weight: bold;
@@ -275,7 +279,8 @@
 
         <div id="workout-status">Prêt pour la mission ? Cochez vos exercices ci-dessous.</div>
         <div class="timer-display" id="timer">00:00</div>
-        <button class="btn" id="start-btn" onclick="startSession()">Lancer le Circuit Sélectionné</button>
+        <button class="btn" id="start-btn" onclick="startSession()">Lancer</button>
+        <button class="btn btn-warning" id="pause-btn" onclick="pauseSession()">Pause</button>
         <button class="btn btn-secondary" onclick="resetSession()">Stop</button>
     </div>
 
@@ -514,6 +519,7 @@
     <script>
         let timerInterval = null;
         let totalSecondsRemaining = 0;
+        let isPaused = false;
 
         function calculateTotalDuration() {
             const workTime = parseInt(document.getElementById('work-time').value) || 0;
@@ -539,12 +545,19 @@
         }
 
         function startSession() {
-            if (timerInterval) clearInterval(timerInterval);
-            
-            const workTime = parseInt(document.getElementById('work-time').value) || 45;
-            totalSecondsRemaining = workTime;
-            
-            document.getElementById('workout-status').innerText = "🔴 EFFORT EN COURS !";
+            if (isPaused) {
+                // Reprendre après une pause
+                isPaused = false;
+                document.getElementById('workout-status').innerText = "🔴 EFFORT EN COURS (Repris)";
+                document.getElementById('pause-btn').innerText = "Pause";
+            } else {
+                // Lancer un nouveau décompte
+                if (timerInterval) clearInterval(timerInterval);
+                const workTime = parseInt(document.getElementById('work-time').value) || 45;
+                totalSecondsRemaining = workTime;
+                document.getElementById('workout-status').innerText = "🔴 EFFORT EN COURS !";
+            }
+
             updateTimerDisplay();
 
             timerInterval = setInterval(() => {
@@ -557,9 +570,24 @@
             }, 1000);
         }
 
+        function pauseSession() {
+            if (!timerInterval) return;
+
+            if (!isPaused) {
+                clearInterval(timerInterval);
+                isPaused = true;
+                document.getElementById('workout-status').innerText = "⏸️ EN PAUSE";
+                document.getElementById('pause-btn').innerText = "Reprendre";
+            } else {
+                startSession();
+            }
+        }
+
         function resetSession() {
             if (timerInterval) clearInterval(timerInterval);
             totalSecondsRemaining = 0;
+            isPaused = false;
+            document.getElementById('pause-btn').innerText = "Pause";
             document.getElementById('workout-status').innerText = "Prêt pour la mission ? Cochez vos exercices ci-dessous.";
             document.getElementById('timer').innerText = "00:00";
         }

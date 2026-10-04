@@ -69,19 +69,15 @@
             font-weight: bold;
         }
 
-        .music-controls {
-            display: flex;
-            gap: 8px;
-        }
-
         .music-controls select {
-            flex-grow: 1;
+            width: 100%;
             background: var(--bg-color);
             color: var(--text-main);
             border: 1px solid var(--accent);
-            padding: 8px;
+            padding: 10px;
             border-radius: 5px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            cursor: pointer;
         }
 
         .section-title {
@@ -296,15 +292,13 @@
 
     <!-- SÉLECTEUR DE MUSIQUE YOUTUBE MUSIC -->
     <div class="music-panel">
-        <label for="music-select">🎵 Ambiance Musicale</label>
-        <div class="music-controls">
-            <select id="music-select">
-                <option value="https://music.youtube.com/channel/UCS_Sf4Ca5klzDkVPtq-_5_w?si=p72hCUfwXiaGVkG2">Playlist 1</option>
-                <option value="https://music.youtube.com/watch?v=B4KCdo4NYI4&si=33gpYgGfbvCwHg1W">Playlist 2</option>
-                <option value="https://music.youtube.com/playlist?list=PLUInpELRS8HF92C_CNSiA9bBS4UgxTxHf&si=gJRtYLvKU8rG2_Ar">Playlist 3</option>
-            </select>
-            <button class="btn" style="padding: 8px 15px; margin: 0; font-size: 0.85rem;" onclick="openMusic()">Ouvrir</button>
-        </div>
+        <label for="music-select">🎵 Choisir une Playlist (Ouverture auto)</label>
+        <select id="music-select" onchange="openSelectedMusic()">
+            <option value="" disabled selected>-- Sélectionnez votre musique --</option>
+            <option value="https://music.youtube.com/channel/UCS_Sf4Ca5klzDkVPtq-_5_w?si=p72hCUfwXiaGVkG2">Playlist 1</option>
+            <option value="https://music.youtube.com/watch?v=B4KCdo4NYI4&si=33gpYgGfbvCwHg1W">Playlist 2</option>
+            <option value="https://music.youtube.com/playlist?list=PLUInpELRS8HF92C_CNSiA9bBS4UgxTxHf&si=gJRtYLvKU8rG2_Ar">Playlist 3</option>
+        </select>
     </div>
 
     <!-- ZONE INTERACTIVE / ENTRAÎNEMENT DU JOUR -->
@@ -570,7 +564,8 @@
         let workoutQueue = [];
         let currentStepIndex = 0;
 
-        function openMusic() {
+        // Ouvre automatiquement la playlist dès qu'on clique dessus dans le menu
+        function openSelectedMusic() {
             const select = document.getElementById('music-select');
             const url = select.value;
             if (url) {
